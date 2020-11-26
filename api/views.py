@@ -1,5 +1,6 @@
 import logging
 import os
+from pathlib import Path
 
 import requests
 from django.conf import settings as django_settings
@@ -14,9 +15,11 @@ from django.views.decorators.csrf import csrf_exempt
 from django_filters.rest_framework import DjangoFilterBackend
 from pip._vendor import requests
 from rest_framework import viewsets, filters
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.parsers import JSONParser
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from api.filter import SeasonFilter
 from dashboard.models.models import MatchMap, Profile, Map, MapPool, BombSpot, Operator, League, LeagueGroup, Season, \
@@ -37,8 +40,10 @@ logger = logging.getLogger(__name__)
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    filterset_fields = ['username']
 
     def retrieve(self, request, *args, **kwargs):
         if kwargs.get('pk') == 'current':
@@ -171,7 +176,7 @@ class MatchViewSet(viewsets.ModelViewSet):
 class MatchMapViewSet(viewsets.ModelViewSet):
     queryset = MatchMap.objects.all()
     serializer_class = MatchMapSerializer
-    filterset_fields = ['match', 'map']
+    filterset_fields = ['match', 'map', 'status']
 
     # MapBan elements with a specific match id
     # URL: /api/match/<id>/maps
@@ -255,12 +260,16 @@ class RoundViewSet(viewsets.ModelViewSet):
 class OverlayStyleViewSet(viewsets.ModelViewSet):
     queryset = OverlayStyle.objects.all()
     serializer_class = OverlayStyleSerializer
+    filterset_fields = ['user']
 
 
 class OverlayStateViewSet(viewsets.ModelViewSet):
+    permission_classes = [AllowAny]
     queryset = OverlayState.objects.all()
     serializer_class = OverlayStateSerializer
+    filterset_fields = ['user']
 
+    # // Deprecated
     # OverlayState elements with a specific user id
     # URL: /api/overlay/state/by_user/<id>/
     @action(methods=['get'], detail=True)
@@ -287,6 +296,7 @@ class OverlayStateViewSet(viewsets.ModelViewSet):
 
 
 class MatchOverlayDataViewSet(viewsets.ModelViewSet):
+    permission_classes = [AllowAny]
     queryset = MatchOverlayData.objects.all()
     serializer_class = MatchOverlayDataSerializer
     filterset_fields = ['user']
@@ -310,6 +320,13 @@ class TimerOverlayDataViewSet(viewsets.ModelViewSet):
 class TickerOverlayDataViewSet(viewsets.ModelViewSet):
     queryset = TickerOverlayData.objects.all()
     serializer_class = TickerOverlayDataSerializer
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def version(request):
+    current_version = Path(os.path.join(django_settings.BASE_DIR, "VERSION")).read_text()
+    return Response({'version': current_version})
 
 
 # Other views

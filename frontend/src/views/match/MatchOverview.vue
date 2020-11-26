@@ -1,6 +1,8 @@
 <template>
     <BaseLayout :title="$t('navigation.overview')" title_icon="fas fa-gamepad" :bc_path="bcPath">
 
+        <vue-headful :title="$t('navigation.overview') + ' - Caster Dashboard'"/>
+
         <b-row>
 
             <!-- Match Details -->
@@ -152,9 +154,11 @@
                         <b-row>
 
                             <b-col cols="12" class="mb-2">
-                                <b-btn variant="secondary" class="btn-block">
-                                    {{ $t('matches.overview.actions.show_details') }}
-                                </b-btn>
+                                <router-link :to="{name: 'Match Details', params: {id: $route.params.id}}">
+                                    <b-btn variant="secondary" class="btn-block">
+                                        {{ $t('matches.overview.actions.show_details') }}
+                                    </b-btn>
+                                </router-link>
                             </b-col>
 
                             <b-col cols="12">
