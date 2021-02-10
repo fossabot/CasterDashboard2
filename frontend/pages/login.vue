@@ -103,7 +103,7 @@ export default {
 
     methods: {
         loginRedirect(){
-            if (this.$route.query.next) {
+            if (this.$route.query.next){
                 this.$router.push(this.$route.query.next)
             } else {
                 this.$router.push("/dashboard/home")
